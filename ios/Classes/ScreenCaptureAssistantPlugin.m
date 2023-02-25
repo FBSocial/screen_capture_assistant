@@ -45,7 +45,7 @@
     } else if ([@"stopObserverScreenCaptureDirection" isEqualToString:call.method]) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:@"FANBOOK_DIRECTION_CHANGED" object:nil];
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
-                                           NULL,//(__bridge const void *)(self)
+                                           (__bridge const void *)(self),//(__bridge const void *)(self)
                                            (CFStringRef)@"DeviceOrientation",
                                            NULL);
         
@@ -97,7 +97,7 @@ void onBroadcastStarted(CFNotificationCenterRef center, void *observer, CFString
     [sender.methodChannel invokeMethod:@"screenShareState" arguments:@"fb_broadcastStartedWithSetupInfo"];
 
     CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
-                                       NULL,//(__bridge const void *)(self)
+                                       observer,//(__bridge const void *)(self)
                                        (CFStringRef)@"ZGStartedBroadcastUploadExtensionProcessENDNotification",
                                        NULL);
 }
@@ -109,7 +109,7 @@ void onBroadcastFinish(CFNotificationCenterRef center, void *observer, CFStringR
     [sender.methodChannel invokeMethod:@"screenShareState" arguments:@"fb_broadcastFinished"];
 
     CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
-                                       NULL,
+                                       observer,
                                        (CFStringRef)@"ZGFinishBroadcastUploadExtensionProcessENDNotification",
                                        NULL);
 }
