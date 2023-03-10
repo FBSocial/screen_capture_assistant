@@ -37,6 +37,17 @@ class MockScreenCaptureAssistantPlatform
   void stopObserverScreenCaptureDirection() {
     // TODO: implement stopObserverScreenCaptureDirection
   }
+
+  @override
+  void endCheckWindowSize() {
+    // TODO: implement endCheckWindowSize
+  }
+
+  @override
+  Future<bool?> startCheckWindowSize(int windowID) {
+    // TODO: implement startCheckWindowSize
+    return Future.value(false);
+  }
 }
 
 void main() {
