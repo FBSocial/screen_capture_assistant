@@ -18,10 +18,14 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _screenCaptureAssistantPlugin = ScreenCaptureAssistant();
-
+  bool bStart = false;
+  
   @override
   void initState() {
     super.initState();
+   ScreenCaptureAssistant.listenEvents((screenCaptureAssistantEvent, data){
+      print('event-----------------------{$screenCaptureAssistantEvent} $data');
+   });
     initPlatformState();
   }
 
@@ -57,6 +61,16 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Text('Running on: $_platformVersion\n'),
         ),
+        floatingActionButton: FloatingActionButton(onPressed: () async {
+          if(!bStart){
+            bStart = true;
+            int windowId = 0x00;
+            ScreenCaptureAssistant.startCheckWindowSize(windowId);
+          }else{
+            ScreenCaptureAssistant.endCheckWindowSize();
+            bStart = false;
+          }
+        },child: const Icon(Icons.add_sharp),),
       ),
     );
   }
