@@ -1,6 +1,6 @@
 # screen_capture_assistant
 
-A new Flutter project.
+A new Flutter project for screen capture.
 
 ## Getting Started
 
