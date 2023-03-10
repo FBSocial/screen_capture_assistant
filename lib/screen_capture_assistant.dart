@@ -43,8 +43,9 @@ class ScreenCaptureAssistant {
   }
 
   /// 开始检查屏幕共享窗口宽高变化
-  static void startCheckWindowSize() {
-    ScreenCaptureAssistantPlatform.instance.startCheckWindowSize();
+  static Future<bool?> startCheckWindowSize(int windowID) async {
+    return ScreenCaptureAssistantPlatform.instance
+        .startCheckWindowSize(windowID);
   }
 
   /// 结束屏幕共享窗口宽高变化
@@ -66,6 +67,8 @@ class ScreenCaptureAssistant {
         callback(ScreenCaptureAssistantEvent.directionChange, data);
       } else if (eventName == 'screenCaptureState') {
         callback(ScreenCaptureAssistantEvent.screenCaptureState, data);
+      } else if (eventName == 'onShareWindowResizeEvent') {
+        callback(ScreenCaptureAssistantEvent.shareWindowResizeEvent, data);
       }
     });
   }
@@ -79,4 +82,5 @@ class ScreenCaptureAssistant {
 enum ScreenCaptureAssistantEvent {
   directionChange,
   screenCaptureState,
+  shareWindowResizeEvent,
 }

@@ -37,6 +37,8 @@ protected:
   WndSize getWndSize() const;
 
  private:
+   void startTimer();
+   void stopTimer();
   // Called when a method is called on this plugin's channel from Dart.
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,

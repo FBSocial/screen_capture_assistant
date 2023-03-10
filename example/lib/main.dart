@@ -19,13 +19,15 @@ class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _screenCaptureAssistantPlugin = ScreenCaptureAssistant();
   bool bStart = false;
-  
+  TextEditingController? _controller;
+
   @override
   void initState() {
     super.initState();
-   ScreenCaptureAssistant.listenEvents((screenCaptureAssistantEvent, data){
+    _controller = TextEditingController();
+    ScreenCaptureAssistant.listenEvents((screenCaptureAssistantEvent, data) {
       print('event-----------------------{$screenCaptureAssistantEvent} $data');
-   });
+    });
     initPlatformState();
   }
 
@@ -58,19 +60,50 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          // ignore: sort_child_properties_last
+          child: Column(
+            children: [
+              Text('Running on: $_platformVersion\n'),
+              TextField(
+                decoration: const InputDecoration(
+                  hintText: '请输入窗口ID',
+                ),
+                controller: _controller,
+              )
+            ],
+          ),
         ),
-        floatingActionButton: FloatingActionButton(onPressed: () async {
-          if(!bStart){
-            bStart = true;
-            int windowId = 0x00;
-            ScreenCaptureAssistant.startCheckWindowSize(windowId);
-          }else{
-            ScreenCaptureAssistant.endCheckWindowSize();
-            bStart = false;
-          }
-        },child: const Icon(Icons.add_sharp),),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            if (!bStart) {
+              int windowID = 0x303EA;
+              String? id = _controller?.text;
+              if (id == null || id!.isEmpty) {
+                return;
+              }
+              try {
+                windowID = int.parse(id);
+                bool? isOk = await ScreenCaptureAssistant.startCheckWindowSize(windowID).onError((error, stackTrace) {
+                  print(error.toString());
+                });
+                if (isOk != null && isOk) {
+                  bStart = true;
+                  setState(() {});
+                }
+              } catch (_) {
+                print('start error!');
+              }
+            } else {
+              ScreenCaptureAssistant.endCheckWindowSize();
+              bStart = false;
+            }
+          },
+          child: bStart
+              ? const Icon(Icons.stop_circle)
+              : const Icon(Icons.start_rounded),
+        ),
       ),
     );
   }

@@ -7,7 +7,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockScreenCaptureAssistantPlatform
     with MockPlatformInterfaceMixin
     implements ScreenCaptureAssistantPlatform {
-
   @override
   void listenReplayKitEvents(Function(String? p1) eventCallback) {
     // TODO: implement listenReplayKitEvents

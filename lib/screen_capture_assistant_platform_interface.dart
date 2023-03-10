@@ -52,7 +52,7 @@ abstract class ScreenCaptureAssistantPlatform extends PlatformInterface {
         'checkScreenCaptureState() has not been implemented.');
   }
 
-  void startCheckWindowSize() {
+  Future<bool?> startCheckWindowSize(int windowID) async {
     throw UnimplementedError(
         'startCheckWindowSize() has not been implemented.');
   }

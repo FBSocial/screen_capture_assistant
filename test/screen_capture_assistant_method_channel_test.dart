@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:screen_capture_assistant/screen_capture_assistant_method_channel.dart';
 
 void main() {
-  MethodChannelScreenCaptureAssistant platform = MethodChannelScreenCaptureAssistant();
+  MethodChannelScreenCaptureAssistant platform =
+      MethodChannelScreenCaptureAssistant();
   const MethodChannel channel = MethodChannel('screen_capture_assistant');
 
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -18,6 +18,8 @@
 
 #include <iostream>
 
+#pragma warning(disable: 4312)
+
 const UINT ID_CHECK_TIMER = 101;
 
 namespace screen_capture_assistant {
@@ -76,7 +78,7 @@ std::optional<LRESULT> ScreenCaptureAssistantPlugin::HandleWindowProc(HWND hwnd,
   }
   if (message == WM_TIMER) {
     if (wparam == ID_CHECK_TIMER) {
-      std::cout << "==== checking ====" << std::endl;
+      //std::cout << "==== checking ====" << std::endl;
       if (_hwnd) {
         //check now share window resize
         checkShareWindowResize();
@@ -89,10 +91,16 @@ std::optional<LRESULT> ScreenCaptureAssistantPlugin::HandleWindowProc(HWND hwnd,
 void ScreenCaptureAssistantPlugin::onShareWindowResizeEvent(const int width, const int height)
 {
   std::cout << "==== window resize ====" << std::endl;
-  const auto event = flutter::EncodableValue(flutter::EncodableMap {
-    { flutter::EncodableValue("event"), flutter::EncodableValue("onShareWindowResizeEvent") },
+  int64_t windowID = int64_t(_hwnd);
+  flutter::EncodableMap data = {
     { flutter::EncodableValue("width"), flutter::EncodableValue(width) },
     { flutter::EncodableValue("height"), flutter::EncodableValue(height) },
+    { flutter::EncodableValue("windowID"), flutter::EncodableValue(windowID)},
+  };
+
+  const auto event = flutter::EncodableValue(flutter::EncodableMap {
+    { flutter::EncodableValue("event"), flutter::EncodableValue("onShareWindowResizeEvent") },
+    { flutter::EncodableValue("data"), flutter::EncodableValue(data) },
   });
   _eventSink->Success(event);
 }
@@ -105,7 +113,11 @@ void ScreenCaptureAssistantPlugin::checkShareWindowResize()
     _wndSize.wndWidth = wndsize.wndWidth;
     _wndSize.wndHeight = wndsize.wndHeight;
   }
-  std::cout << " width: " << _wndSize.wndWidth << " height: " << _wndSize.wndHeight << std::endl;
+  //std::cout << " width: " << _wndSize.wndWidth << " height: " << _wndSize.wndHeight << std::endl;
+  if (wndsize.wndWidth == 0 && wndsize.wndHeight == 0 && !IsWindow(_hwnd)) {
+    std::cout << " Is No a Window!" << std::endl;
+    stopTimer();
+  }
 }
 
 WndSize ScreenCaptureAssistantPlugin::getWndSize() const
@@ -117,6 +129,21 @@ WndSize ScreenCaptureAssistantPlugin::getWndSize() const
     wndSize.wndHeight = window_rect.bottom - window_rect.top;
   }
   return wndSize;
+}
+
+void ScreenCaptureAssistantPlugin::startTimer()
+{
+  if (_hwnd) {
+    SetTimer(_myHwnd, ID_CHECK_TIMER, 500, NULL);
+  }
+}
+
+void ScreenCaptureAssistantPlugin::stopTimer()
+{
+  if (_hwnd) {
+    KillTimer(_myHwnd, ID_CHECK_TIMER);
+    _hwnd = NULL;
+  }
 }
 
 void ScreenCaptureAssistantPlugin::HandleMethodCall(
@@ -135,17 +162,21 @@ void ScreenCaptureAssistantPlugin::HandleMethodCall(
     //result->Success(flutter::EncodableValue(version_stream.str()));
   }else if(method_call.method_name().compare("startCheckWindowSize") == 0) {
     //std::cout << "---------startCheckWindowSize" << std::endl;
-    flutter::EncodableMap arguments =
+    const flutter::EncodableMap& args = 
       std::get<flutter::EncodableMap>(*method_call.arguments());
-    int32_t windowId = std::get<int>(arguments[flutter::EncodableValue("windowId")]);
-    _hwnd = (HWND)windowId;
+    int windowID = std::get<int>(args.at(flutter::EncodableValue("windowID")));
+    HWND hwnd = (HWND)(windowID);
+    if (!IsWindow(hwnd)) {
+      result->Error("Invalid window", "startCheckWindowSize error.");
+      return;
+    }
+    _hwnd = hwnd;
     _wndSize = getWndSize();
-    SetTimer(_myHwnd, ID_CHECK_TIMER, 500, NULL);
+    startTimer();
     result->Success(true);
-  } else if(method_call.method_name().compare("stopCheckWindowSize") == 0) {
+  } else if(method_call.method_name().compare("endCheckWindowSize") == 0) {
     //std::cout << "---------stopCheckWindowSize" << std::endl;
-    KillTimer(_myHwnd, ID_CHECK_TIMER);
-    _hwnd = NULL;
+    stopTimer();
     result->Success(true);
   }else {
     result->NotImplemented();
