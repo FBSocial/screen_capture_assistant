@@ -42,11 +42,22 @@ class ScreenCaptureAssistant {
         .stopObserverScreenCaptureDirection();
   }
 
+  /// 开始检查屏幕共享窗口宽高变化
+  static void startCheckWindowSize() {
+    ScreenCaptureAssistantPlatform.instance.startCheckWindowSize();
+  }
+
+  /// 结束屏幕共享窗口宽高变化
+  static void endCheckWindowSize() {
+    ScreenCaptureAssistantPlatform.instance.endCheckWindowSize();
+  }
+
   /// 监听屏幕共享时的屏幕方向变化与屏幕共享是否开启的状态
   ///
   /// 此方法在应用启动调用， 此后只有使用[startObserverScreenCaptureDirection]、 [checkScreenCaptureState]等才会有事件回调
   /// 对应的，若调用了[stopObserverScreenCaptureDirection]将不会有方向改变回调
-  static void listenEvents(Function(ScreenCaptureAssistantEvent, dynamic data) callback) {
+  static void listenEvents(
+      Function(ScreenCaptureAssistantEvent, dynamic data) callback) {
     eventChannel.receiveBroadcastStream().listen((eventMap) {
       if (eventMap is! Map) return;
       final eventName = eventMap['event'];

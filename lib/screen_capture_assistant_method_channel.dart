@@ -43,4 +43,14 @@ class MethodChannelScreenCaptureAssistant
   Future<bool?> checkScreenCaptureState() async {
     return await methodChannel.invokeMethod('checkScreenCaptureState');
   }
+
+  @override
+  void startCheckWindowSize() {
+    methodChannel.invokeMethod('startCheckWindowSize');
+  }
+
+  @override
+  void endCheckWindowSize() {
+    methodChannel.invokeMethod('endCheckWindowSize');
+  }
 }
