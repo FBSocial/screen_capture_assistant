@@ -1,15 +1,12 @@
 # screen_capture_assistant
+屏幕共享相关的辅助功能插件
 
-A new Flutter project for screen capture.
+## iOS
+屏幕共享是在子进程中，需要通过进程通知来通信
+1. ReplayKit录制的开始与停止事件
+2. 录制时的屏幕方向变化事件
+3. 检测iOS是否正在屏幕共享
 
-## Getting Started
-
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
-
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+## MacOS/Windows
+1. 监听指定窗口大小变化
+2. 获取指定窗口大小
