@@ -19,6 +19,5 @@ class ScreenCaptureAssistantWeb extends ScreenCaptureAssistantPlatform {
   }
 
   @override
-  // TODO: implement eventChannel
   EventChannel get eventChannel => throw UnimplementedError();
 }

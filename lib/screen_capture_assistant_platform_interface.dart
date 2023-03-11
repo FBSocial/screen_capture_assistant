@@ -60,4 +60,8 @@ abstract class ScreenCaptureAssistantPlatform extends PlatformInterface {
   void endCheckWindowSize() {
     throw UnimplementedError('endCheckWindowSize() has not been implemented.');
   }
+
+  Future<Size> getWindowSize(int windowID) async {
+    throw UnimplementedError('getWindowSize() has not been implemented.');
+  }
 }

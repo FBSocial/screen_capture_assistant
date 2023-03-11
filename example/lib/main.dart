@@ -82,7 +82,8 @@ class _MyAppState extends State<MyApp> {
                 child: Text(bStart ? '停止监听窗口变化' : '开始监听窗口变化'),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: () {}, child: const Text('单次获取窗口大小')),
+              ElevatedButton(
+                  onPressed: getWindowSize, child: const Text('单次获取窗口大小')),
             ],
           ),
         ),
@@ -90,26 +91,35 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  int getTestWindowID() {
+    int windowID = 0x303EA;
+    String? id = _controller?.text;
+    if (id == null || id.isEmpty) return windowID;
+    try {
+      windowID = int.parse(id);
+    } catch (_) {}
+    return windowID;
+  }
+
+  Future<void> getWindowSize() async {
+    final windowID = getTestWindowID();
+    final size = await ScreenCaptureAssistant.getWindowSize(windowID);
+    print('windowID: $windowID size: $size');
+  }
+
   Future<void> listenWindowSizeChange() async {
     if (!bStart) {
-      int windowID = 0x303EA;
-      String? id = _controller?.text;
-      if (id == null || id!.isEmpty) {
-        return;
-      }
-      try {
-        windowID = int.parse(id);
-        bool? isOk = await ScreenCaptureAssistant.startCheckWindowSize(windowID)
-            .onError((error, stackTrace) {
+      final windowID = getTestWindowID();
+      bool? isOk =
+          await ScreenCaptureAssistant.startCheckWindowSize(windowID).onError(
+        (error, stackTrace) {
           print(error.toString());
           ScreenCaptureAssistant.endCheckWindowSize();
-        });
-        if (isOk != null && isOk) {
-          bStart = true;
-          setState(() {});
-        }
-      } catch (_) {
-        print('start error!');
+        },
+      );
+      if (isOk != null && isOk) {
+        bStart = true;
+        setState(() {});
       }
     } else {
       ScreenCaptureAssistant.endCheckWindowSize();

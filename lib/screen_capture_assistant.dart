@@ -53,6 +53,11 @@ class ScreenCaptureAssistant {
     ScreenCaptureAssistantPlatform.instance.endCheckWindowSize();
   }
 
+  /// 获取指定窗口大小
+  static Future<Size> getWindowSize(int windowID) async {
+    return await ScreenCaptureAssistantPlatform.instance.getWindowSize(windowID);
+  }
+
   /// 监听屏幕共享时的屏幕方向变化与屏幕共享是否开启的状态
   ///
   /// 此方法在应用启动调用， 此后只有使用[startObserverScreenCaptureDirection]、 [checkScreenCaptureState]等才会有事件回调

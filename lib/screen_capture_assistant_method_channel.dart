@@ -46,10 +46,21 @@ class MethodChannelScreenCaptureAssistant
 
   @override
   Future<bool?> startCheckWindowSize(int windowID) async {
-    return await methodChannel
-        .invokeMethod<bool>('startCheckWindowSize', <String, dynamic>{
-      'windowID': windowID,
-    });
+    return await methodChannel.invokeMethod<bool>(
+      'startCheckWindowSize',
+      <String, dynamic>{'windowID': windowID},
+    );
+  }
+
+  @override
+  Future<Size> getWindowSize(int windowID) async {
+    // NSDictionary *data = @{@"width": width, @"height": height};
+    final size = await methodChannel.invokeMethod(
+      'getWindowSize',
+      <String, dynamic>{'windowID': windowID},
+    );
+    if (size is! Map) return Size.zero;
+    return Size(size['width'], size['height']);
   }
 
   @override

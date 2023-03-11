@@ -31,6 +31,14 @@
     } else if ([@"endCheckWindowSize" isEqualToString:call.method]) {
         [self stopTimer];
         result(@YES);
+    } else if ([@"getWindowSize" isEqualToString:call.method]) {
+        NSDictionary *arguments = call.arguments;
+        int windowID = [arguments[@"windowID"] intValue];
+        CGRect rect = [self getWindowSizeWith: windowID];
+        NSNumber *width = [NSNumber numberWithDouble:rect.size.width];
+        NSNumber *height = [NSNumber numberWithDouble:rect.size.height];
+        NSDictionary *data = @{@"width": width, @"height": height};
+        result(data);
     } else {
         result(FlutterMethodNotImplemented);
     }
