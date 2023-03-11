@@ -27,10 +27,10 @@
         NSDictionary *arguments = call.arguments;
         int windowID = [arguments[@"windowID"] intValue];
         [self startTimerWith: windowID];
-        result(nil);
+        result(@YES);
     } else if ([@"endCheckWindowSize" isEqualToString:call.method]) {
         [self stopTimer];
-        result(nil);
+        result(@YES);
     } else {
         result(FlutterMethodNotImplemented);
     }

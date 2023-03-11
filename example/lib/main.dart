@@ -71,40 +71,50 @@ class _MyAppState extends State<MyApp> {
                   hintText: '请输入窗口ID',
                 ),
                 controller: _controller,
-              )
+              ),
+              const SizedBox(height: 80),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll<Color>(
+                      bStart ? Colors.red : Colors.blue),
+                ),
+                onPressed: listenWindowSizeChange,
+                child: Text(bStart ? '停止监听窗口变化' : '开始监听窗口变化'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(onPressed: () {}, child: const Text('单次获取窗口大小')),
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            if (!bStart) {
-              int windowID = 0x303EA;
-              String? id = _controller?.text;
-              if (id == null || id!.isEmpty) {
-                return;
-              }
-              try {
-                windowID = int.parse(id);
-                bool? isOk = await ScreenCaptureAssistant.startCheckWindowSize(windowID).onError((error, stackTrace) {
-                  print(error.toString());
-                });
-                if (isOk != null && isOk) {
-                  bStart = true;
-                  setState(() {});
-                }
-              } catch (_) {
-                print('start error!');
-              }
-            } else {
-              ScreenCaptureAssistant.endCheckWindowSize();
-              bStart = false;
-            }
-          },
-          child: bStart
-              ? const Icon(Icons.stop_circle)
-              : const Icon(Icons.start_rounded),
-        ),
       ),
     );
+  }
+
+  Future<void> listenWindowSizeChange() async {
+    if (!bStart) {
+      int windowID = 0x303EA;
+      String? id = _controller?.text;
+      if (id == null || id!.isEmpty) {
+        return;
+      }
+      try {
+        windowID = int.parse(id);
+        bool? isOk = await ScreenCaptureAssistant.startCheckWindowSize(windowID)
+            .onError((error, stackTrace) {
+          print(error.toString());
+          ScreenCaptureAssistant.endCheckWindowSize();
+        });
+        if (isOk != null && isOk) {
+          bStart = true;
+          setState(() {});
+        }
+      } catch (_) {
+        print('start error!');
+      }
+    } else {
+      ScreenCaptureAssistant.endCheckWindowSize();
+      bStart = false;
+      setState(() {});
+    }
   }
 }
