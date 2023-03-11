@@ -55,7 +55,12 @@ class ScreenCaptureAssistant {
 
   /// 获取指定窗口大小
   static Future<Size> getWindowSize(int windowID) async {
-    return await ScreenCaptureAssistantPlatform.instance.getWindowSize(windowID);
+    return await ScreenCaptureAssistantPlatform.instance
+        .getWindowSize(windowID);
+  }
+
+  static Future<bool?> isValidWindow(int windowID) async {
+    return ScreenCaptureAssistantPlatform.instance.isValidWindow(windowID);
   }
 
   /// 监听屏幕共享时的屏幕方向变化与屏幕共享是否开启的状态

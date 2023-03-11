@@ -34,7 +34,7 @@ class ScreenCaptureAssistantPlugin : public flutter::Plugin {
 protected:
   void onShareWindowResizeEvent(const int width, const int height);
   void checkShareWindowResize();
-  WndSize getWndSize() const;
+  WndSize getWndSize(HWND hwnd) const;
 
  private:
    void startTimer();

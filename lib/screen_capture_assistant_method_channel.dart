@@ -67,4 +67,12 @@ class MethodChannelScreenCaptureAssistant
   void endCheckWindowSize() {
     methodChannel.invokeMethod('endCheckWindowSize');
   }
+
+  @override
+  Future<bool?> isValidWindow(int windowID) async {
+    return await methodChannel
+        .invokeMethod<bool>('isValidWindow', <String, dynamic>{
+      'windowID': windowID,
+    });
+  }
 }

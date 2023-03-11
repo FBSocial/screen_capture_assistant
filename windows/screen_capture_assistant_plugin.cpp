@@ -15,7 +15,7 @@
 #include <memory>
 #include <sstream>
 #include <map>
-
+#include <codecvt>
 #include <iostream>
 
 #pragma warning(disable: 4312)
@@ -107,7 +107,10 @@ void ScreenCaptureAssistantPlugin::onShareWindowResizeEvent(const int width, con
 
 void ScreenCaptureAssistantPlugin::checkShareWindowResize()
 {
-  auto wndsize = getWndSize();
+  if (_hwnd && IsIconic(_hwnd)) {
+    return;
+  }
+  auto wndsize = getWndSize(_hwnd);
   if (wndsize.wndWidth != _wndSize.wndWidth || wndsize.wndHeight != _wndSize.wndHeight) {
     onShareWindowResizeEvent(wndsize.wndWidth, wndsize.wndHeight);
     _wndSize.wndWidth = wndsize.wndWidth;
@@ -120,11 +123,11 @@ void ScreenCaptureAssistantPlugin::checkShareWindowResize()
   }
 }
 
-WndSize ScreenCaptureAssistantPlugin::getWndSize() const
+WndSize ScreenCaptureAssistantPlugin::getWndSize(HWND hwnd) const
 {
   RECT window_rect;
   WndSize wndSize;
-  if (_hwnd && ::GetWindowRect(_hwnd, &window_rect)) {
+  if (hwnd && ::GetWindowRect(hwnd, &window_rect)) {
     wndSize.wndWidth = window_rect.right - window_rect.left;
     wndSize.wndHeight = window_rect.bottom - window_rect.top;
   }
@@ -160,18 +163,45 @@ void ScreenCaptureAssistantPlugin::HandleMethodCall(
     //  version_stream << "7";
     //}
     //result->Success(flutter::EncodableValue(version_stream.str()));
-  }else if(method_call.method_name().compare("startCheckWindowSize") == 0) {
-    //std::cout << "---------startCheckWindowSize" << std::endl;
-    const flutter::EncodableMap& args = 
+  }
+  else if (method_call.method_name().compare("isValidWindow") == 0) {
+    const flutter::EncodableMap& args =
       std::get<flutter::EncodableMap>(*method_call.arguments());
     int windowID = std::get<int>(args.at(flutter::EncodableValue("windowID")));
-    HWND hwnd = (HWND)(windowID);
+    const HWND hwnd = (HWND)(windowID);
+    bool isWindow = IsWindow(hwnd);
+    return result->Success(isWindow);
+  }
+  else if (method_call.method_name().compare("getWindowSize") == 0) {
+    const flutter::EncodableMap& args =
+      std::get<flutter::EncodableMap>(*method_call.arguments());
+    int windowID = std::get<int>(args.at(flutter::EncodableValue("windowID")));
+    const HWND hwnd = (HWND)(windowID);
+    WndSize wndSize = getWndSize(hwnd);
+    int const bufferSize = 1 + GetWindowTextLength(hwnd);
+    std::wstring wtitle(bufferSize, L'\0');
+    GetWindowText(hwnd, &wtitle[0], bufferSize);
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    std::string title = (converter.to_bytes(wtitle)).c_str();
+
+    flutter::EncodableMap data = {
+        { flutter::EncodableValue("width"), flutter::EncodableValue(wndSize.wndWidth) },
+        { flutter::EncodableValue("height"), flutter::EncodableValue(wndSize.wndHeight) },
+        { flutter::EncodableValue("title"), flutter::EncodableValue(title)},
+    };
+    result->Success(data);
+  } else if (method_call.method_name().compare("startCheckWindowSize") == 0) {
+    //std::cout << "---------startCheckWindowSize" << std::endl;
+    const flutter::EncodableMap& args =
+      std::get<flutter::EncodableMap>(*method_call.arguments());
+    int windowID = std::get<int>(args.at(flutter::EncodableValue("windowID")));
+    const HWND hwnd = (HWND)(windowID);
     if (!IsWindow(hwnd)) {
       result->Error("Invalid window", "startCheckWindowSize error.");
       return;
     }
     _hwnd = hwnd;
-    _wndSize = getWndSize();
+    _wndSize = getWndSize(hwnd);
     startTimer();
     result->Success(true);
   } else if(method_call.method_name().compare("endCheckWindowSize") == 0) {
