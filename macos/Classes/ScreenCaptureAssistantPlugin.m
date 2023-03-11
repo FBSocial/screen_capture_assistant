@@ -6,7 +6,8 @@
 @property (nonatomic, copy) FlutterEventSink eventSink;
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic) int windowID;
-
+@property (nonatomic) CGRect lastWindowBounds;
+ 
 @end
 
 @implementation ScreenCaptureAssistantPlugin
@@ -24,8 +25,8 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"startCheckWindowSize" isEqualToString:call.method]) {
         NSDictionary *arguments = call.arguments;
-        self.windowID = [arguments[@"windowID"] intValue];
-        [self startTimer];
+        int windowID = [arguments[@"windowID"] intValue];
+        [self startTimerWith: windowID];
         result(nil);
     } else if ([@"endCheckWindowSize" isEqualToString:call.method]) {
         [self stopTimer];
@@ -35,29 +36,39 @@
     }
 }
 
-
-- (void)startTimer {
+- (void)startTimerWith:(int)windowID {
     [self stopTimer];
+    self.windowID = windowID;
     self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(getWindowSize) userInfo:nil repeats:YES];
     [self.timer fire];
 }
 
 
 - (void)stopTimer{
+    self.windowID = 0;
+    self.lastWindowBounds = CGRectMake(0, 0, 0, 0);
+    
     if (self.timer == NULL) return;
     [self.timer invalidate];
     self.timer = NULL;
 }
 
 - (void)getWindowSize {
-    CGRect rect = [self getWindowSizeWith: self.windowID];
     if (self.eventSink == NULL) return;
+    
+    CGRect rect = [self getWindowSizeWith: self.windowID];
+    if (rect.size.width == self.lastWindowBounds.size.width && rect.size.height == self.lastWindowBounds.size.height) {
+        return;
+    }
+    self.lastWindowBounds = rect;
+    
     NSNumber *width = [NSNumber numberWithDouble:rect.size.width];
     NSNumber *height = [NSNumber numberWithDouble:rect.size.height];
     NSNumber *windowID = [NSNumber numberWithInt:self.windowID];
-    NSDictionary *data = @{@"width": width,@"height":height,@"windowID":windowID};
+    NSDictionary *data = @{@"width": width, @"height": height, @"windowID": windowID};
     self.eventSink(@{@"event":@"onShareWindowResizeEvent", @"data": data});
 }
+
 - (CGRect)getWindowSizeWith:(int)windowID {
     NSMutableArray *windows = (NSMutableArray *)CFBridgingRelease(CGWindowListCopyWindowInfo(kCGWindowListOptionAll, 0));
 
@@ -67,12 +78,11 @@
         if (windowNumber != windowID) continue;
         NSString *name = [window objectForKey:@"kCGWindowOwnerName" ];
         CGRectMakeWithDictionaryRepresentation((CFDictionaryRef)[window objectForKey:@"kCGWindowBounds"], &bounds);
-        NSLog(@"windowID:%d name:%@   bounds:%@", windowNumber, name, NSStringFromRect(bounds));
+//        NSLog(@"windowID:%d name:%@   bounds:%@", windowNumber, name, NSStringFromRect(bounds));
         break;
     }
     return bounds;
 }
-
 
 #pragma mark FlutterStreamHandler implementations
 - (FlutterError *)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)events {
