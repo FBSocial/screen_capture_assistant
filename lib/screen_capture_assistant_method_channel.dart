@@ -60,7 +60,10 @@ class MethodChannelScreenCaptureAssistant
       <String, dynamic>{'windowID': windowID},
     );
     if (size is! Map) return Size.zero;
-    return Size(size['width'], size['height']);
+    final width = size['width'];
+    final height = size['height'];
+    return Size(width is int ? width.toDouble() : width,
+        height is int ? height.toDouble() : height);
   }
 
   @override
