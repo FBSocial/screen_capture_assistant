@@ -65,6 +65,16 @@ class ScreenCaptureAssistant {
         .getWindowSize(windowID);
   }
 
+  /// [MacOS] 检查是否获得屏幕录制权限
+  static Future<bool?> checkScreenRecordPermission() async {
+    return await ScreenCaptureAssistantPlatform.instance.checkScreenRecordPermission();
+  }
+
+  /// [MacOS] 打开屏幕录制权限设置窗口
+  static Future<void> openScreenCaptureSetting() async {
+    return await ScreenCaptureAssistantPlatform.instance.openScreenCaptureSetting();
+  }
+
   /// [Windows] 判断指定窗口是否有效
   static Future<bool?> isValidWindow(int windowID) async {
     return ScreenCaptureAssistantPlatform.instance.isValidWindow(windowID);
