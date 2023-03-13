@@ -88,9 +88,12 @@ class _MyAppState extends State<MyApp> {
                   onPressed: getWindowSize, child: const Text('单次获取窗口大小')),
               const SizedBox(height: 20),
               ElevatedButton(
-                  onPressed: checkScreenRecordPermission, child: const Text('检查屏幕录制权限')),
+                  onPressed: checkScreenRecordPermission,
+                  child: const Text('检查屏幕录制权限')),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: openScreenCaptureSetting, child: const Text('打开屏幕录制权限设置页面')),
+              ElevatedButton(
+                  onPressed: openScreenCaptureSetting,
+                  child: const Text('打开屏幕录制权限设置页面')),
             ],
           ),
         ),
@@ -136,14 +139,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> checkScreenRecordPermission() async {
-      if(Platform.isMacOS){
-        final hasPermission = await ScreenCaptureAssistant.checkScreenRecordPermission();
-        print('==== hasPermission: $hasPermission');
-      }
+    if (Platform.isMacOS) {
+      final hasPermission =
+          await ScreenCaptureAssistant.checkScreenRecordPermission();
+      print('==== hasPermission: $hasPermission');
+    }
   }
 
   Future<void> openScreenCaptureSetting() async {
-    if(Platform.isMacOS){
+    if (Platform.isMacOS) {
       await ScreenCaptureAssistant.openScreenCaptureSetting();
     }
   }

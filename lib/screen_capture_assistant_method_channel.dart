@@ -73,7 +73,8 @@ class MethodChannelScreenCaptureAssistant
 
   @override
   Future<bool?> checkScreenRecordPermission() async {
-    return await methodChannel.invokeMethod<bool>('checkScreenRecordPermission');
+    return await methodChannel
+        .invokeMethod<bool>('checkScreenRecordPermission');
   }
 
   @override

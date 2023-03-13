@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/services.dart';
 
 import 'screen_capture_assistant_platform_interface.dart';
@@ -67,12 +68,20 @@ class ScreenCaptureAssistant {
 
   /// [MacOS] 检查是否获得屏幕录制权限
   static Future<bool?> checkScreenRecordPermission() async {
-    return await ScreenCaptureAssistantPlatform.instance.checkScreenRecordPermission();
+    if (Platform.isMacOS) {
+      return await ScreenCaptureAssistantPlatform.instance
+          .checkScreenRecordPermission();
+    } else {
+      return true;
+    }
   }
 
   /// [MacOS] 打开屏幕录制权限设置窗口
   static Future<void> openScreenCaptureSetting() async {
-    return await ScreenCaptureAssistantPlatform.instance.openScreenCaptureSetting();
+    if (Platform.isMacOS) {
+      return await ScreenCaptureAssistantPlatform.instance
+          .openScreenCaptureSetting();
+    }
   }
 
   /// [Windows] 判断指定窗口是否有效
