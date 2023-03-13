@@ -72,6 +72,16 @@ class MethodChannelScreenCaptureAssistant
   }
 
   @override
+  Future<bool?> checkScreenRecordPermission() async {
+    return await methodChannel.invokeMethod<bool>('checkScreenRecordPermission');
+  }
+
+  @override
+  Future<void> openScreenCaptureSetting() async {
+    methodChannel.invokeMethod<bool>('openScreenCaptureSetting');
+  }
+
+  @override
   Future<bool?> isValidWindow(int windowID) async {
     return await methodChannel
         .invokeMethod<bool>('isValidWindow', <String, dynamic>{

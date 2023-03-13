@@ -1,4 +1,5 @@
 #import "ScreenCaptureAssistantPlugin.h"
+#include <libproc.h>
 
 @interface ScreenCaptureAssistantPlugin() <FlutterStreamHandler>
 
@@ -39,6 +40,15 @@
         NSNumber *height = [NSNumber numberWithDouble:rect.size.height];
         NSDictionary *data = @{@"width": width, @"height": height};
         result(data);
+    } else if([@"checkScreenRecordPermission" isEqualToString:call.method]) {
+        BOOL ret = [self checkScreenRecordPermission];
+        if(!ret) {
+            [self showScreenRecordingPrompt];
+        }
+        result(@(ret));
+    } else if([@"openScreenCaptureSetting" isEqualToString:call.method]) {
+        [self openScreenCaptureSetting];
+        result(@YES);
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -50,7 +60,6 @@
     self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(getWindowSize) userInfo:nil repeats:YES];
     [self.timer fire];
 }
-
 
 - (void)stopTimer{
     self.windowID = 0;
@@ -84,12 +93,67 @@
     for (NSDictionary *window in windows) {
         int  windowNumber = [[window objectForKey:@"kCGWindowNumber"] intValue];
         if (windowNumber != windowID) continue;
-        NSString *name = [window objectForKey:@"kCGWindowOwnerName" ];
+//        NSString *name = [window objectForKey:@"kCGWindowOwnerName" ];
         CGRectMakeWithDictionaryRepresentation((CFDictionaryRef)[window objectForKey:@"kCGWindowBounds"], &bounds);
 //        NSLog(@"windowID:%d name:%@   bounds:%@", windowNumber, name, NSStringFromRect(bounds));
         break;
     }
     return bounds;
+}
+
+/// 申请屏幕录制权限
+- (void)showScreenRecordingPrompt {
+  /* macos 10.14 and lower do not require screen recording permission to get window titles */
+  if(@available(macos 10.15, *)) {
+    /*
+     To minimize the intrusion just make a 1px image of the upper left corner
+     This way there is no real possibilty to access any private data
+     */
+    CGImageRef screenshot = CGWindowListCreateImage(
+        CGRectMake(0,0,1,1),
+        kCGWindowListOptionOnScreenOnly,
+        kCGNullWindowID,
+        kCGWindowImageDefault);
+    CFRelease(screenshot);
+  }
+}
+
+/// 判断是否获得屏幕录制权限
+- (bool) checkScreenRecordPermission {
+    if (@available(macos 10.15, *)) {//mac10.15及以上才有屏幕录制授权
+        bool bRet = false;
+        CFArrayRef list = CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID);
+        if (list) {
+            int n = (int)(CFArrayGetCount(list));
+            for (int i = 0; i < n; i++) {
+                NSDictionary* info = (NSDictionary*)(CFArrayGetValueAtIndex(list, (CFIndex)i));
+                NSString* name = info[(id)kCGWindowName];
+                NSNumber* pid = info[(id)kCGWindowOwnerPID];
+                if (pid != nil && name != nil) {
+                    int nPid = [pid intValue];
+                    char path[PROC_PIDPATHINFO_MAXSIZE+1];
+                    int lenPath = proc_pidpath(nPid, path, PROC_PIDPATHINFO_MAXSIZE);
+                    if (lenPath > 0) {
+                        path[lenPath] = 0;
+                        if (strcmp(path, "/System/Library/CoreServices/SystemUIServer.app/Contents/MacOS/SystemUIServer") == 0) {
+                            bRet = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            CFRelease(list);
+        }
+        return bRet;
+    } else {
+        return true;
+    }
+}
+
+/// 打开屏幕录制权限设置窗口
+- (void) openScreenCaptureSetting {
+    NSString *urlString = @"x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture";
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
 }
 
 #pragma mark FlutterStreamHandler implementations

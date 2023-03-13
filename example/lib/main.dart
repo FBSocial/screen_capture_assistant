@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -84,6 +86,11 @@ class _MyAppState extends State<MyApp> {
               const SizedBox(height: 20),
               ElevatedButton(
                   onPressed: getWindowSize, child: const Text('单次获取窗口大小')),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: checkScreenRecordPermission, child: const Text('检查屏幕录制权限')),
+              const SizedBox(height: 20),
+              ElevatedButton(onPressed: openScreenCaptureSetting, child: const Text('打开屏幕录制权限设置页面')),
             ],
           ),
         ),
@@ -125,6 +132,19 @@ class _MyAppState extends State<MyApp> {
       ScreenCaptureAssistant.endCheckWindowSize();
       bStart = false;
       setState(() {});
+    }
+  }
+
+  Future<void> checkScreenRecordPermission() async {
+      if(Platform.isMacOS){
+        final hasPermission = await ScreenCaptureAssistant.checkScreenRecordPermission();
+        print('==== hasPermission: $hasPermission');
+      }
+  }
+
+  Future<void> openScreenCaptureSetting() async {
+    if(Platform.isMacOS){
+      await ScreenCaptureAssistant.openScreenCaptureSetting();
     }
   }
 }
