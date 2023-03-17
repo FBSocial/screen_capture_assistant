@@ -41,7 +41,23 @@
         NSDictionary *data = @{@"width": width, @"height": height};
         result(data);
     } else if([@"checkScreenRecordPermission" isEqualToString:call.method]) {
-        BOOL ret = [self checkScreenRecordPermission];
+        BOOL ret = YES;
+        do {
+            ret = [self checkScreenRecordPermission];
+            NSLog(@"---- call checkScreenRecordPermission ret:%@",ret ? @"YES" : @"NO");
+            if (!ret) {
+                ret = [self checkScreenRecordPermissionV2];
+                NSLog(@"---- call checkScreenRecordPermissionV2 ret:%@",ret ? @"YES" : @"NO");
+                if (!ret) {
+                    ret = [self checkScreenRecordPermissionV3];
+                    NSLog(@"---- call checkScreenRecordPermissionV3 ret:%@",ret ? @"YES" : @"NO");
+                    break;
+                }
+                break;
+            }
+            break;
+        } while(0);
+        //最终检查到没有权限尝试截图唤起系统弹窗
         if(!ret) {
             [self showScreenRecordingPrompt];
         }
@@ -148,6 +164,69 @@
     } else {
         return true;
     }
+}
+
+- (BOOL)checkScreenRecordPermissionV2 {
+    if (@available(macOS 10.15, *)) {
+        CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+        NSUInteger numberOfWindows = CFArrayGetCount(windowList);
+        NSUInteger numberOfWindowsWithName = 0;
+        for (int idx = 0; idx < numberOfWindows; idx++) {
+            NSDictionary *windowInfo = (NSDictionary *)CFArrayGetValueAtIndex(windowList, idx);
+            NSString *windowName = windowInfo[(id)kCGWindowName];
+            if (windowName) {
+                numberOfWindowsWithName++;
+            } else {
+                //no kCGWindowName detected -> not enabled
+                break; //breaking early, numberOfWindowsWithName not increased
+            }
+        }
+        CFRelease(windowList);
+        return numberOfWindows == numberOfWindowsWithName;
+    }
+    return YES;
+}
+
+- (BOOL)checkScreenRecordPermissionV3 {
+    BOOL canRecordScreen = YES;
+    if (@available(macOS 10.15, *)) {
+        canRecordScreen = NO;
+        NSRunningApplication *runningApplication = NSRunningApplication.currentApplication;
+        NSNumber *ourProcessIdentifier = [NSNumber numberWithInteger:runningApplication.processIdentifier];
+
+        CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+        NSUInteger numberOfWindows = CFArrayGetCount(windowList);
+        for (int index = 0; index < numberOfWindows; index++) {
+            // get information for each window
+            NSDictionary *windowInfo = (NSDictionary *)CFArrayGetValueAtIndex(windowList, index);
+            NSString *windowName = windowInfo[(id)kCGWindowName];
+            NSNumber *processIdentifier = windowInfo[(id)kCGWindowOwnerPID];
+
+            // don't check windows owned by this process
+            if (! [processIdentifier isEqual:ourProcessIdentifier]) {
+                // get process information for each window
+                pid_t pid = processIdentifier.intValue;
+                NSRunningApplication *windowRunningApplication = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+                if (! windowRunningApplication) {
+                    // ignore processes we don't have access to, such as WindowServer, which manages the windows named "Menubar" and "Backstop Menubar"
+                }
+                else {
+                    NSString *windowExecutableName = windowRunningApplication.executableURL.lastPathComponent;
+                    if (windowName) {
+                        if ([windowExecutableName isEqual:@"Dock"]) {
+                            // ignore the Dock, which provides the desktop picture
+                        }
+                        else {
+                            canRecordScreen = YES;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        CFRelease(windowList);
+    }
+    return canRecordScreen;
 }
 
 /// 打开屏幕录制权限设置窗口
