@@ -62,6 +62,13 @@
             [self showScreenRecordingPrompt];
         }
         result(@(ret));
+    } else if ([@"checkAuxiliaryControlPermission" isEqualToString:call.method]) {
+        BOOL ret = YES;
+        ret = [self hasAccessibiltyPermissions];
+        result(@(ret));
+    }  else if ([@"openAccessibiltySetting" isEqualToString:call.method]) {
+        [self openAccessibiltyPreferences];
+        result(@YES);
     } else if([@"openScreenCaptureSetting" isEqualToString:call.method]) {
         [self openScreenCaptureSetting];
         result(@YES);
@@ -228,7 +235,28 @@
     }
     return canRecordScreen;
 }
+- (BOOL)hasAccessibiltyPermissions {
+  BOOL isTrusted = YES;
+  /* macOS 10.13 and lower allows us to send key events regardless of accessibilty trust */
+  if(@available(macOS 10.14, *)) {
+    isTrusted = AXIsProcessTrusted();
+      if (!isTrusted) {
+          [self requestAccessibiltyPermissions];
+      }
+  }
+  return isTrusted;
+}
 
+- (BOOL)requestAccessibiltyPermissions {
+    NSDictionary *options = @{(id)CFBridgingRelease(kAXTrustedCheckOptionPrompt): @NO};
+    BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
+    return accessibilityEnabled;
+}
+
+
+- (void)openAccessibiltyPreferences {
+  [NSWorkspace.sharedWorkspace openURL:[NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"]];
+}
 /// 打开屏幕录制权限设置窗口
 - (void) openScreenCaptureSetting {
     NSString *urlString = @"x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture";

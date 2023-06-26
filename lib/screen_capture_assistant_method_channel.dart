@@ -78,8 +78,19 @@ class MethodChannelScreenCaptureAssistant
   }
 
   @override
+  Future<bool?> checkAuxiliaryControlPermission() async {
+    return await methodChannel
+        .invokeMethod<bool>('checkAuxiliaryControlPermission');
+  }
+
+  @override
   Future<void> openScreenCaptureSetting() async {
     methodChannel.invokeMethod<bool>('openScreenCaptureSetting');
+  }
+
+  @override
+  Future<void> openAccessibiltySetting() async {
+    methodChannel.invokeMethod<bool>('openAccessibiltySetting');
   }
 
   @override

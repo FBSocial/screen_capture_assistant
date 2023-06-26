@@ -94,6 +94,15 @@ class _MyAppState extends State<MyApp> {
               ElevatedButton(
                   onPressed: openScreenCaptureSetting,
                   child: const Text('打开屏幕录制权限设置页面')),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: checkAuxiliaryControlPermission,
+                  child: const Text('检查辅助控制权限')),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: openAccessibiltySetting,
+                  child: const Text('打开辅助控制权限设置页面')),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -143,6 +152,20 @@ class _MyAppState extends State<MyApp> {
       final hasPermission =
           await ScreenCaptureAssistant.checkScreenRecordPermission();
       print('==== hasPermission: $hasPermission');
+    }
+  }
+
+  Future<void> checkAuxiliaryControlPermission() async {
+    if (Platform.isMacOS) {
+      final hasPermission =
+          await ScreenCaptureAssistant.checkAuxiliaryControlPermission();
+      print('==== hasPermission: $hasPermission');
+    }
+  }
+
+  Future<void> openAccessibiltySetting() async {
+    if (Platform.isMacOS) {
+      await ScreenCaptureAssistant.openAccessibiltySetting();
     }
   }
 

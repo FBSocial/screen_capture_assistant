@@ -70,6 +70,16 @@ abstract class ScreenCaptureAssistantPlatform extends PlatformInterface {
         'checkScreenRecordPermission() has not been implemented.');
   }
 
+  Future<bool?> checkAuxiliaryControlPermission() async {
+    throw UnimplementedError(
+        'checkAuxiliaryControlPermission() has not been implemented.');
+  }
+
+  Future<void> openAccessibiltySetting() async {
+    throw UnimplementedError(
+        'openAccessibiltySetting() has not been implemented.');
+  }
+
   Future<void> openScreenCaptureSetting() async {
     throw UnimplementedError(
         'openScreenCaptureSetting() has not been implemented.');

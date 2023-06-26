@@ -76,6 +76,24 @@ class ScreenCaptureAssistant {
     }
   }
 
+  /// [MacOS] 检查是否获得辅助控制权限
+  static Future<bool?> checkAuxiliaryControlPermission() async {
+    if (Platform.isMacOS) {
+      return await ScreenCaptureAssistantPlatform.instance
+          .checkAuxiliaryControlPermission();
+    } else {
+      return true;
+    }
+  }
+
+  /// [MacOS] 打开辅助控制权限设置窗口
+  static Future<void> openAccessibiltySetting() async {
+    if (Platform.isMacOS) {
+      return await ScreenCaptureAssistantPlatform.instance
+          .openAccessibiltySetting();
+    }
+  }
+
   /// [MacOS] 打开屏幕录制权限设置窗口
   static Future<void> openScreenCaptureSetting() async {
     if (Platform.isMacOS) {
